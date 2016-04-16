@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}
+	<title>{{title}}</title>
+{% endblock %}
+
+
+{% block head %}
+	<link rel='stylesheet' type='text/css' 
+		href='{{ url_for('static', filename='css/stylesheet.css') }}'/>
+{% endblock %}
+
+{% block body %}
+	<canvas id="a" width="600" height="600">
+		This text is displayed if your browser does not support HTML5 Canvas.
+	</canvas>
+
+	<!-- images for the pieces -->
+	<img id="blackPawn" src="{{ url_for('static', filename='images/Chess_pdt45.svg') }}"></script>
+	<img id="blackKnight" src="{{ url_for('static', filename='images/Chess_ndt45.svg') }}"></script>
+	<img id="blackBishop" src="{{ url_for('static', filename='images/Chess_bdt45.svg') }}"></script>
+	<img id="blackRook" src="{{ url_for('static', filename='images/Chess_rdt45.svg') }}"></script>
+	<img id="blackQueen" src="{{ url_for('static', filename='images/Chess_qdt45.svg') }}"></script>
+	<img id="blackKing" src="{{ url_for('static', filename='images/Chess_kdt45.svg') }}"></script>
+	
+	<img id="whitePawn" src="{{ url_for('static', filename='images/Chess_plt45.svg') }}"></script>
+	<img id="whiteKnight" src="{{ url_for('static', filename='images/Chess_nlt45.svg') }}"></script>
+	<img id="whiteBishop" src="{{ url_for('static', filename='images/Chess_blt45.svg') }}"></script>
+	<img id="whiteRook" src="{{ url_for('static', filename='images/Chess_rlt45.svg') }}"></script>
+	<img id="whiteQueen" src="{{ url_for('static', filename='images/Chess_qlt45.svg') }}"></script>
+	<img id="whiteKing" src="{{ url_for('static', filename='images/Chess_klt45.svg') }}"></script>
+
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> -->
+	 <script>if (!window.jQuery) { document.write('<script src="{{ url_for('static', filename='js/jquery.js') }}"><\/script>'); } </script>
+	<script type="text/javascript">
+	  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+	  	</script>
+
+
+
+	<script type="text/javascript" src="{{ url_for('static', filename='js/draw_chessboard.js') }}"></script>
+
+
+
+{% endblock %}
