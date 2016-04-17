@@ -120,10 +120,8 @@ class Chess():
 		player = self.getPieceColor(code)
 		selectedType = pieceType[code]
 		if player == "black":
-			playerCells = self.blackCells
 			enemyCells = self.whiteCells
 		else:
-			playerCells = self.whiteCells
 			enemyCells = self.blackCells
 		choices = set()
 
@@ -131,28 +129,86 @@ class Chess():
 			if player == "black":
 				if self.cells[position+8] == 0:
 					choices.add(position+8)
-				if position < 16 and self.cells[position+16] == 0:
+				if (position < 16 and
+					self.cells[position+8] == self.cells[position+16] == 0):
 					choices.add(position+16)
 			else:
 				if self.cells[position-8] == 0:
 					choices.add(position-8)
-				if position > 47 and self.cells[position-16] == 0:
+				if (position > 47 and
+					self.cells[position-8] == self.cells[position-16] == 0):
 					choices.add(position-16)
 			for c in PAWN_ATTACK_MOVES[player]:
 				target = position + c
 				if (target in enemyCells and
 					abs(position % 8 - (target) % 8) < 3):  # checks the boundaries
 						choices.add(target)
+		else:
+			self.getCellsTargetedBy(position, choices)
 
-		elif selectedType == "knight":
-			for c in KNIGHT_MOVES:
-				if abs(position % 8 - (position + c) % 8) < 3:  # checks the boundaries
-					choices.add(position + c)
+		validChoices = self.freeCells | enemyCells
+		choices = choices & validChoices
 
-		elif selectedType == "king":
-			for c in KING_MOVES:
-				if abs(position % 8 - (position + c) % 8) < 3:  # checks the boundaries
-					choices.add(position + c)
+		toExclude = set()
+		for choice in choices:
+			move = Move(position, choice, self)
+			self.applyMove(move)
+			if self.isCheck(player):
+				toExclude.add(choice)
+			self.revertMove(move)
+		return list(choices-toExclude)
+
+	def isCheck(self, player):
+		covered = self.getCoveredCells(opponent[player])
+		if player == "white":
+			return self.whiteKing in covered
+		else:
+			return self.blackKing in covered
+
+	def isCheckMate(self):
+		return len(self.getPossibleChoices()) == 0
+
+	def getCoveredCells(self, player):
+		"""Returns all cells that are coverd by this player.
+			This ignores the possiblity that a turn might not be possibile
+			because of check. """
+		covered = set()
+		if player == "black":
+			playerCells = self.blackCells
+			enemyCells = self.whiteCells
+		else:
+			playerCells = self.whiteCells
+			enemyCells = self.blackCells
+
+		for position in playerCells:
+			self.getCellsTargetedBy(position, covered)
+
+		validChoices = self.freeCells | enemyCells
+		return covered & validChoices
+
+	def getCellsTargetedBy(self, position, returnSet):
+		""" Puts all cells that are attacked from this position
+			into the specified return set.
+			For performance reasons this doesn't guarantee that the
+			cells are in bounds!"""
+		code = self.cells[position]
+		player = self.getPieceColor(code)
+		selectedType = pieceType[code]
+		if player == "black":
+			playerCells = self.blackCells
+			enemyCells = self.whiteCells
+		else:
+			playerCells = self.whiteCells
+			enemyCells = self.blackCells
+
+		if selectedType in ["pawn", "knight", "king"]:
+			targets = {"pawn": PAWN_ATTACK_MOVES[player],
+						"knight": KNIGHT_MOVES,
+						"king": KING_MOVES}[selectedType]
+			for c in targets:
+				target = position + c
+				if abs(position % 8 - (target) % 8) < 3:  # checks the boundaries
+						returnSet.add(target)
 
 		elif selectedType in ["bishop", "rook", "queen"]:
 			stepSizes = {"bishop": BISHOP_STEPS,
@@ -165,75 +221,9 @@ class Chess():
 							c+stepSize in playerCells):
 						break
 					c += stepSize
-					choices.add(c)
+					returnSet.add(c)
 					if c in enemyCells:
 						break
-
-		validChoices = self.freeCells | enemyCells
-		choices = choices & validChoices
-
-		toExclude = set()
-		for choice in choices:
-			move = Move(position, choice, self)
-			self.applyMove(move)
-			if code == 16:
-				print("checking position: " + str(choice))
-			if self.isCheck(player):
-				print("check!!!!!")
-				toExclude.add(choice)
-			self.revertMove(move)
-		return list(choices-toExclude)
-
-	def isCheck(self, player):
-		covered = self.getCoveredCells(opponent[player])
-		print(covered)
-		if player == "white":
-			return self.whiteKing in covered
-		else:
-			return self.blackKing in covered
-
-	def isCheckMate(self):
-		return len(self.getPossibleChoices()) == 0
-
-	def getCoveredCells(self, player):
-		covered = set()
-		if player == "black":
-			playerCells = self.blackCells
-			enemyCells = self.whiteCells
-		else:
-			playerCells = self.whiteCells
-			enemyCells = self.blackCells
-
-		for position in playerCells:
-			code = self.cells[position]
-			selectedType = pieceType[code]
-
-			if selectedType in ["pawn", "knight", "king"]:
-				targets = {"pawn": PAWN_ATTACK_MOVES[player],
-							"knight": KNIGHT_MOVES,
-							"king": KING_MOVES}[selectedType]
-				for c in targets:
-					target = position + c
-					if abs(position % 8 - (target) % 8) < 3:  # checks the boundaries
-							covered.add(target)
-
-			elif selectedType in ["bishop", "rook", "queen"]:
-				stepSizes = {"bishop": BISHOP_STEPS,
-							"rook": ROOK_STEPS,
-							"queen": QUEEN_STEPS}[selectedType]
-				for stepSize in stepSizes:
-					c = position
-					for i in range(0, 7):
-						if (abs(c % 8 - (c+stepSize) % 8) > 1 or
-								c+stepSize in playerCells):
-							break
-						c += stepSize
-						covered.add(c)
-						if c in enemyCells:
-							break
-
-		validChoices = self.freeCells | enemyCells
-		return covered & validChoices
 
 	def applyMove(self, move):
 		piece = self.cells[move.moveFrom]
@@ -303,17 +293,16 @@ class Chess():
 		else:
 			self.whiteCells.add(move.moveTo)
 
-		if piece == 6: 
+		if piece == 6:
 			self.blackKing = move.moveFrom
-		if piece == 16: 
+		if piece == 16:
 			self.whiteKing = move.moveFrom
 
 		assert len(self.cells) == 64
 		assert len(self.freeCells) >= 32
 		assert len(self.blackCells) <= 32
 		assert len(self.whiteCells) <= 32
-		assert len(self.blackCells) + len(self.whiteCells) + len(self.freeCells) == 64
-
+		assert len(self.blackCells)+len(self.whiteCells)+len(self.freeCells) == 64
 
 	def toJson(self):
 		return jsonify(playerTurn=self.playerTurn, cells=self.cells)

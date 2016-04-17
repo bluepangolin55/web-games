@@ -39,13 +39,13 @@ class AI():
 			for choice in state.getPossibleChoices(cell):
 				# nextTurn = state.move(cell, choice)
 				move = Move(cell, choice, state)
-				print(player)
-				print("from: " + str(move.moveFrom))
-				print("to: " + str(move.moveTo))
+				# print(player)
+				# print("from: " + str(move.moveFrom))
+				# print("to: " + str(move.moveTo))
 				state.applyMove(move)
 				grade = self.gradeTurn(state, player) + random()
 				state.revertMove(move)
-				print("grade " + str(grade))
+				# print("grade " + str(grade))
 				if(grade > bestGrade):
 					bestMove = move
 					bestGrade = grade
@@ -102,8 +102,8 @@ class AI():
 		"""Returns the weighted number of choices
 			for both players in the current turn.
 			Implements all other tactics"""
-		print("grading number of choices")
-		print("player is: " + state.playerTurn)
+		# print("grading number of choices")
+		# print("player is: " + state.playerTurn)
 		black = 0
 		white = 0
 		for cell in state.blackCells:
