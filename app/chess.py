@@ -41,6 +41,14 @@ pieceType = {
 }
 
 
+PAWN_ATTACK_MOVES = {"black": [7, 9], "white": [-7, -9]}
+KNIGHT_MOVES = [6, 10, 15, 17, -6, -10, -15, -17]
+KING_MOVES = [-9, -8, -7, -1, 1, 7, 8, 9]
+
+BISHOP_STEPS = [-9, -7, 7, 9]
+ROOK_STEPS = [-8, -1, 1, 8]
+QUEEN_STEPS = BISHOP_STEPS + ROOK_STEPS
+
 
 class Move():
 	def __init__(self, moveFrom, moveTo, chess):
@@ -125,37 +133,31 @@ class Chess():
 					choices.add(position+8)
 				if position < 16 and self.cells[position+16] == 0:
 					choices.add(position+16)
-				attack = [7, 9]
 			else:
 				if self.cells[position-8] == 0:
 					choices.add(position-8)
 				if position > 47 and self.cells[position-16] == 0:
 					choices.add(position-16)
-				attack = [-7, -9]
-			for c in attack:
+			for c in PAWN_ATTACK_MOVES[player]:
 				target = position + c
 				if (target in enemyCells and
 					abs(position % 8 - (target) % 8) < 3):  # checks the boundaries
 						choices.add(target)
 
 		elif selectedType == "knight":
-			KnightMoves = [6, 10, 15, 17, -6, -10, -15, -17]
-			for c in KnightMoves:
+			for c in KNIGHT_MOVES:
 				if abs(position % 8 - (position + c) % 8) < 3:  # checks the boundaries
 					choices.add(position + c)
 
 		elif selectedType == "king":
-			KingMoves = [-9, -8, -7, -1, 1, 7, 8, 9]
-			for c in KingMoves:
+			for c in KING_MOVES:
 				if abs(position % 8 - (position + c) % 8) < 3:  # checks the boundaries
 					choices.add(position + c)
 
 		elif selectedType in ["bishop", "rook", "queen"]:
-			stepSizes = []
-			if selectedType in ["bishop", "queen"]:
-				stepSizes += [8+1, 8-1, -8+1, -8-1]
-			if selectedType in ["rook", "queen"]:
-				stepSizes += [8, -8, +1, -1]
+			stepSizes = {"bishop": BISHOP_STEPS,
+						"rook": ROOK_STEPS,
+						"queen": QUEEN_STEPS}[selectedType]
 			for stepSize in stepSizes:
 				c = position
 				for i in range(0, 7):
@@ -169,10 +171,8 @@ class Chess():
 
 		validChoices = self.freeCells | enemyCells
 		choices = choices & validChoices
-		# choices = choices & set(range(0,64))
-		# choices = choices - playerCells
-		toExclude = set()
 
+		toExclude = set()
 		for choice in choices:
 			move = Move(position, choice, self)
 			self.applyMove(move)
@@ -185,48 +185,55 @@ class Chess():
 		return list(choices-toExclude)
 
 	def isCheck(self, player):
+		covered = self.getCoveredCells(opponent[player])
+		print(covered)
 		if player == "white":
-			return self.isCoveredBy(self.whiteKing, "black")
+			return self.whiteKing in covered
 		else:
-			return self.isCoveredBy(self.blackKing, "white")
+			return self.blackKing in covered
 
 	def isCheckMate(self):
 		return len(self.getPossibleChoices()) == 0
 
-	def isCoveredBy(self, cell, player):
-		""" Returns whether a cell is covered by a player."""
-		# pawns
-		moves = []
+	def getCoveredCells(self, player):
+		covered = set()
 		if player == "black":
-			moves = [-7, -9]
+			playerCells = self.blackCells
+			enemyCells = self.whiteCells
 		else:
-			moves = [7, 9]
-		for move in moves:
-			if moveInBoundries(cell, cell + move):
-				code = self.cells[cell + move]
-				if ((player == "black" and code == 1) or
-					(player == "white" and code == 11)):
-					return True
+			playerCells = self.whiteCells
+			enemyCells = self.blackCells
 
-		# knights
-		moves = [6, 10, 15, 17, -6, -10, -15, -17]
-		for move in moves:
-			if moveInBoundries(cell, cell + move):
-				code = self.cells[cell + move]
-				if ((player == "black" and code == 2) or
-					(player == "white" and code == 12)):
-					return True
+		for position in playerCells:
+			code = self.cells[position]
+			selectedType = pieceType[code]
 
-		# king
-		moves = [-9, -8, -7, -1, 1, 7, 8, 9]
-		for move in moves:
-			if moveInBoundries(cell, cell + move):
-				code = self.cells[cell + move]
-				if ((player == "black" and code == 6) or
-					(player == "white" and code == 16)):
-					return True
+			if selectedType in ["pawn", "knight", "king"]:
+				targets = {"pawn": PAWN_ATTACK_MOVES[player],
+							"knight": KNIGHT_MOVES,
+							"king": KING_MOVES}[selectedType]
+				for c in targets:
+					target = position + c
+					if abs(position % 8 - (target) % 8) < 3:  # checks the boundaries
+							covered.add(target)
 
-		return False
+			elif selectedType in ["bishop", "rook", "queen"]:
+				stepSizes = {"bishop": BISHOP_STEPS,
+							"rook": ROOK_STEPS,
+							"queen": QUEEN_STEPS}[selectedType]
+				for stepSize in stepSizes:
+					c = position
+					for i in range(0, 7):
+						if (abs(c % 8 - (c+stepSize) % 8) > 1 or
+								c+stepSize in playerCells):
+							break
+						c += stepSize
+						covered.add(c)
+						if c in enemyCells:
+							break
+
+		validChoices = self.freeCells | enemyCells
+		return covered & validChoices
 
 	def applyMove(self, move):
 		piece = self.cells[move.moveFrom]
