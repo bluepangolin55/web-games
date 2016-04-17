@@ -30,6 +30,17 @@ opponent = {
 	"black": "white"
 }
 
+pieceType = {
+		1: "pawn", 11: "pawn",
+		2: "knight", 12: "knight",
+		3: "bishop", 13: "bishop",
+		4: "rook", 14: "rook",
+		5: "queen", 15: "queen",
+		6: "king", 16: "king",
+		0: "none"
+}
+
+
 
 class Move():
 	def __init__(self, moveFrom, moveTo, chess):
@@ -40,7 +51,7 @@ class Move():
 
 def moveInBoundries(pos, target):
 	"""Guarantees that the move from 'pos' to 'target' lies in the boundries."""
-	return abs(pos % 8 - target % 8) < 3 and target >= 0 and target < 63
+	return abs(pos % 8 - target % 8) < 4 and target >= 0 and target < 63
 
 class Chess():
 	def __init__(self):
@@ -54,7 +65,6 @@ class Chess():
 		self.whiteCells = set(range(48, 64))
 		self.whiteKing = 60
 		self.blackKing = 4
-		# self.updateInfo()
 		assert len(self.cells) == 64
 		assert len(self.freeCells) == 32
 		assert len(self.blackCells) == 16
@@ -81,15 +91,7 @@ class Chess():
 			return "none"
 
 	def getPieceType(self, code):
-		return {
-			1: "pawn", 11: "pawn",
-			2: "knight", 12: "knight",
-			3: "bishop", 13: "bishop",
-			4: "rook", 14: "rook",
-			5: "queen", 15: "queen",
-			6: "king", 16: "king",
-			0: "none"
-		}[code]
+		return pieceType[code]
 
 	def getPlayerCells(self):
 		return {
@@ -105,10 +107,10 @@ class Chess():
 
 	def getPossibleChoices(self, position):
 		assert position >= 0 and position <= 63
-		print("getting possible choices ")
+		# print("getting possible choices ")
 		code = self.cells[position]
 		player = self.getPieceColor(code)
-		selectedType = self.getPieceType(code)
+		selectedType = pieceType[code]
 		if player == "black":
 			playerCells = self.blackCells
 			enemyCells = self.whiteCells
@@ -165,56 +167,28 @@ class Chess():
 					if c in enemyCells:
 						break
 
-		# exclude out of bounds and player cells
-		choices = [cell for cell in choices
-			if (cell >= 0 and cell < 64 and cell not in playerCells)]
+		validChoices = self.freeCells | enemyCells
+		choices = choices & validChoices
+		# choices = choices & set(range(0,64))
 		# choices = choices - playerCells
-		# toExclude = []
+		toExclude = set()
+
 		for choice in choices:
-			# simulated = self.move(position, choice)
 			move = Move(position, choice, self)
-			# print("#### test simulation!")
-			# print("player is: " + self.playerTurn)
 			self.applyMove(move)
+			if code == 16:
+				print("checking position: " + str(choice))
+			if self.isCheck(player):
+				print("check!!!!!")
+				toExclude.add(choice)
 			self.revertMove(move)
-			# print("fooo")
-			# if self.isCheck(player):
-				# pass
-			# print("barrr")
-				# toExclude.add(choice)
-		# choices = [cell for cell in choices if cell not in toExclude]
-		return choices
-
-	def updateInfo(self):
-		self.freeCells = set()
-		self.blackCells = set()
-		self.whiteCells = set()
-		for i in range(0, 64):
-			code = self.cells[i]
-			if code == 0:
-				self.freeCells.add(i)
-			elif code < 10:
-				self.blackCells.add(i)
-			else:
-				self.whiteCells.add(i)
-			if self.playerTurn == "black" and code == 6:
-				self.blackKing = i
-			if self.playerTurn == "white" and code == 16:
-				self.whiteKing = i
-
-		# postcondition: 
-		assert len(self.cells) == 64
-		assert len(self.freeCells) >= 32
-		assert len(self.blackCells) <= 32
-		assert len(self.whiteCells) <= 32
-		assert len(self.blackCells) + len(self.whiteCells) + len(self.freeCells) == 64
+		return list(choices-toExclude)
 
 	def isCheck(self, player):
 		if player == "white":
-			self.isCoveredBy(self.whiteKing, "black")
+			return self.isCoveredBy(self.whiteKing, "black")
 		else:
-			self.isCoveredBy(self.blackKing, "white")
-		pass
+			return self.isCoveredBy(self.blackKing, "white")
 
 	def isCheckMate(self):
 		return len(self.getPossibleChoices()) == 0
@@ -224,9 +198,9 @@ class Chess():
 		# pawns
 		moves = []
 		if player == "black":
-			moves = [7, 9]
-		else:
 			moves = [-7, -9]
+		else:
+			moves = [7, 9]
 		for move in moves:
 			if moveInBoundries(cell, cell + move):
 				code = self.cells[cell + move]
@@ -251,14 +225,13 @@ class Chess():
 				if ((player == "black" and code == 6) or
 					(player == "white" and code == 16)):
 					return True
+
 		return False
 
 	def applyMove(self, move):
-		player = self.getPieceColor(self.cells[move.moveFrom])
-		target = self.getPieceColor(self.cells[move.moveTo])
-		# print(player)
-		# print("from: " + str(move.moveFrom))
-		# print("to: " + str(move.moveTo))
+		piece = self.cells[move.moveFrom]
+		player = self.getPieceColor(piece)
+		target = self.getPieceColor(move.previousValue)
 		assert player != target
 
 		self.cells[move.moveTo] = self.cells[move.moveFrom]
@@ -282,6 +255,11 @@ class Chess():
 		else:
 			self.whiteCells.remove(move.moveTo)
 
+		if piece == 6:
+			self.blackKing = move.moveTo
+		if piece == 16:
+			self.whiteKing = move.moveTo
+
 		self.turnNumber += 1
 		self.playerTurn = opponent[self.playerTurn]
 		assert len(self.cells) == 64
@@ -295,6 +273,7 @@ class Chess():
 		player = self.getPieceColor(self.cells[move.moveTo])
 		self.cells[move.moveFrom] = self.cells[move.moveTo]
 		self.cells[move.moveTo] = move.previousValue
+		piece = self.cells[move.moveFrom]
 
 		self.turnNumber -= 1
 		self.playerTurn = opponent[self.playerTurn]
@@ -317,6 +296,11 @@ class Chess():
 		else:
 			self.whiteCells.add(move.moveTo)
 
+		if piece == 6: 
+			self.blackKing = move.moveFrom
+		if piece == 16: 
+			self.whiteKing = move.moveFrom
+
 		assert len(self.cells) == 64
 		assert len(self.freeCells) >= 32
 		assert len(self.blackCells) <= 32
@@ -338,4 +322,3 @@ class Chess():
 
 	def __eq__(self, other):
 		return self.__dict__ == other.__dict__
-
