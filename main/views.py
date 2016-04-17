@@ -1,4 +1,4 @@
-from app import app
+from main import app
 from flask import jsonify, render_template, request
 import json
 import threading
