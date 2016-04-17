@@ -1,4 +1,4 @@
-from .chess import Chess
+from .chess import Chess, Move
 from random import random
 
 # a map of how valuable a position is
@@ -36,14 +36,20 @@ class AI():
 		bestMove = None
 		bestGrade = - 999
 		for cell in state.getPlayerCells():
-			print(cell)
 			for choice in state.getPossibleChoices(cell):
-				nextTurn = state.move(cell, choice)  # grade = self.gradeMove(state, nextTurn) + random()
-				grade = self.gradeTurn(nextTurn, player) + random()
-				print(grade)
+				# nextTurn = state.move(cell, choice)
+				move = Move(cell, choice, state)
+				print(player)
+				print("from: " + str(move.moveFrom))
+				print("to: " + str(move.moveTo))
+				state.applyMove(move)
+				grade = self.gradeTurn(state, player) + random()
+				state.revertMove(move)
+				print("grade " + str(grade))
 				if(grade > bestGrade):
-					bestMove = nextTurn
+					bestMove = move
 					bestGrade = grade
+
 		return bestMove
 
 	def gradeTurn(self, turn, player=None):
@@ -53,19 +59,13 @@ class AI():
 		assert(type(player) is str)
 		opponent = {"white": "black", "black": "white"}[player]
 		scores = []
-		weights = [1, 3, 1, 1]
+		weights = [10, 1]
 
 		relPieceValues = self.totalPieceValues(turn)
 		scores.append(relPieceValues[player] - relPieceValues[opponent])
 
 		choices = self.gradedNumberOfChoices(turn)
-		scores.append(choices[player] - choices[opponent])
-
-		larryEvens = self.spaceGradeLarryEvans(turn)
-		scores.append(larryEvens[player] - larryEvens[opponent])
-
-		controlCenter = self.controlOfCenter(turn)
-		scores.append(controlCenter[player] - controlCenter[opponent])
+		scores.append(choices[player] - 10*choices[opponent])
 
 		return sum([a*b for a, b in zip(scores, weights)])
 
@@ -100,17 +100,26 @@ class AI():
 
 	def gradedNumberOfChoices(self, state):
 		"""Returns the weighted number of choices
-			for both players in the current turn."""
+			for both players in the current turn.
+			Implements all other tactics"""
+		print("grading number of choices")
+		print("player is: " + state.playerTurn)
 		black = 0
 		white = 0
 		for cell in state.blackCells:
 			for target in state.getPossibleChoices(cell):
 				if target in state.whiteCells:
 					black += pieceValues[state.cells[target]]
+				# if target > 31:
+					# black += 1
+				# black += cellValues[target]
 		for cell in state.whiteCells:
 			for target in state.getPossibleChoices(cell):
 				if target in state.blackCells:
 					white += pieceValues[state.cells[target]]
+				# if target < 32:
+					# white += 1
+				# white += cellValues[target]
 		return {"black": black, "white": white}
 
 	def spaceGradeLarryEvans(self, state):

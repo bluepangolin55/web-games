@@ -3,7 +3,7 @@ from flask import jsonify, render_template, request
 import json
 import threading
 import time
-from .chess import Chess
+from .chess import Chess, Move
 from .AI import AI
 
 chess = None
@@ -40,10 +40,13 @@ def get_board():
 
 	if(moveTo != -1):
 		if player == chess.playerTurn:
-			print("player")
-			chess = chess.move(selection, moveTo)
-			print("ai")
-			chess = ai.nextMove(chess)
+			print("------> player")
+			# chess = chess.move(selection, moveTo)
+			move = Move(selection, moveTo, chess)
+			chess.applyMove(move)
+			print("------> ai")
+			move = ai.nextMove(chess)
+			chess.applyMove(move)
 
 	return chess.toJson()
 
@@ -54,6 +57,7 @@ def get_board():
 def get_choices(): 
 	selection = request.args.get('a', 0, type=int)
 	return jsonify(choices = chess.getPossibleChoices(selection))
+	# return jsonify(choices=chess.coveredByWhite)
 
 
 with app.test_request_context('/hello', method='POST'):
