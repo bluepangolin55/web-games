@@ -1,70 +1,58 @@
-from main import app
+from main import app, socketio
 from flask import jsonify, render_template, request
+from flask.ext.socketio import SocketIO, emit
 import json
-import threading
+from threading import Thread, Event
 import time
 from .chess import Chess, Move
 from .AI import AI
 
+
+# --- global variables ---
+
 chess = None
 ai = AI()
-player = "white"
 
+def calculateEnemyMove():
+	global chess
+	global ai
+	move = ai.nextMove(chess)
+	chess.applyMove(move)
+	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
+	print("sent ai move")
 
 @app.route('/')
 @app.route('/index')
 def index():
 	global chess
 	chess = Chess()
-	return render_template('index.html',
-						   title='Home')
+	return render_template('index.html', title='Home')
+
 @app.route('/about')
 def about():
 	return render_template('about.html',
 						   title='About')
 
-@app.route('/_add_numbers')
-def add_numbers():
-	a = request.args.get('a', 0, type=int)
-	b = request.args.get('b', 0, type=int)
-	return jsonify(result=a + b)
-
-@app.route('/_get_board')
-def get_board():
-	selection = request.args.get('a', 0, type=int)
-	moveTo = request.args.get('b', 0, type=int)
-
+@socketio.on('new chess game', namespace='/test')
+def newGame(message):
 	global chess
-	global player
-	global ai
+	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
 
-	if(moveTo != -1):
-		if player == chess.playerTurn:
-			print("------> player")
-			# chess = chess.move(selection, moveTo)
-			move = Move(selection, moveTo, chess)
-			chess.applyMove(move)
-			print("------> ai")
-			move = ai.nextMove(chess)
-			chess.applyMove(move)
+@socketio.on('request turn data', namespace='/test')
+def newGame(message):
+	global chess
+	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
 
-	return chess.toJson()
+@socketio.on('submit move', namespace='/test')
+def nextMove(message):
+	global chess
+	selection = message['from']
+	moveTo = message['to']
 
+	move = Move(selection, moveTo, chess)
+	chess.applyMove(move)
+	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
+	thread = Thread(target=calculateEnemyMove)
+	thread.daemon = True
+	thread.start()
 
-# receives the selected piece of the player
-# returns a json file containing an array of all possible choices
-@app.route('/_get_choices')
-def get_choices(): 
-	selection = request.args.get('a', 0, type=int)
-	choices = []
-	for i in range(0, 64):
-		choices.append(chess.getPossibleChoices(i))
-	# return jsonify(choices = chess.getPossibleChoices(selection))
-	return jsonify(choices=choices)
-	# return jsonify(choices=chess.coveredByWhite)
-
-
-with app.test_request_context('/hello', method='POST'):
-	# now you can do something with the request until the
-	# end of the with block, such as basic assertions:
-	print("hi")

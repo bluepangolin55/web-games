@@ -1,3 +1,7 @@
 #!flask/bin/python
-from main import app
-app.run(debug=True)
+from main import app, socketio
+# app.run(debug=True)
+
+if __name__ == '__main__':
+	print("App is starting..")
+	socketio.run(app, debug=True)

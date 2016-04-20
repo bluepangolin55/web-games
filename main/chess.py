@@ -310,10 +310,17 @@ class Chess():
 			choices.append(self.getPossibleChoices(i))
 		return jsonify(playerTurn=self.playerTurn, cells=self.cells, choices=choices)
 
+	def toDict(self):
+		choices = []
+		for i in range(0, 64):
+			choices.append(self.getPossibleChoices(i))
+		return {'cells': self.cells, 'playerTurn': self.playerTurn,
+				'choices': choices}
+
 	def printASCII(self):
 		for i in range(0, 8):
 			for j in range(0, 8):
-				print(self.cells[i*8+j], end='\t')
+				print(self.cells[i * 8 + j], end='\t')
 			print()
 			print()
 			print()

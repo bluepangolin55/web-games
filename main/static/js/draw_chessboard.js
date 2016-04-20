@@ -11,6 +11,9 @@ var moveTo = -1
 // this is the json object that the client receives from the server
 var data
 
+var socket
+
+
 // a client side representation of the field: array of 64 elements. 
 // each element represents the contents of a cell
 // entries are of the form: "free", "blackPawn", etc.
@@ -31,26 +34,9 @@ function getCursorPosition(canvas, event) {
 	console.log("x: " + x + " y: " + y);
 }
 
-// get the most recent data from the server and
-// refresh the client side representation
-var getData = function(e) {
-	$.getJSON(
-		$SCRIPT_ROOT + '/_get_board', 
-		{
-			a: selectedCell,
-			b: moveTo
-		}, 
-		function(receivedData) {
-			data = receivedData
-			cells = data.cells
-		}
-	);
-	return false;
-};
-
 // Set the global configs to synchronous 
 $.ajaxSetup({
-    async: false
+	async: false
 });
 
 function getImage(code){
@@ -147,22 +133,23 @@ function mouseClicked(e) {
 	var x = e.pageX - $(canvas).offset().left
 	var y = e.pageY - $(canvas).offset().top
 
+
+
 	if (data == null){
-		getData()
+		socket.emit('request turn data', {data: 'Hi there!!'});
 		return
 	}
 
 	selection = cellFromCoordinates(x, y)
 	if(getPieceColor(cells[selection]) == data.playerTurn){
 		selectedCell = selection
-		// getChoices()
 	}
 	else if(getPieceColor(cells[selectedCell]) == data.playerTurn){
 		possibleChoices = data.choices[selectedCell]
 		for(var i in possibleChoices){
 			if(possibleChoices[i] == selection){
 				moveTo = selection
-				getData()
+				socket.emit('submit move', {from: selectedCell, to: moveTo});
 				moveTo = -1
 				selectedCell = -1
 			}
@@ -175,9 +162,38 @@ function cellFromCoordinates(x, y){
 	return Math.floor(x/cellSize) + 8*Math.floor(y/cellSize)
 }
 
-// code to be run when the website starts
-getData()
-drawField()
+
+document.addEventListener("DOMContentLoaded", theDomHasLoaded, false);
+window.addEventListener("load", pageFullyLoaded, false);
+ 
+function theDomHasLoaded(e) {
+}
+
+function pageFullyLoaded(e) {
+}
+
+$(document).ready(function(){
+	namespace = '/test'; // change to an empty string to use the global namespace
+
+	// the socket.io documentation recommends sending an explicit package upon connection
+	// this is specially important when using the global namespace
+	socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+
+	socket.emit('new chess game', {data: 'Hi there!!'});
+
+	socket.on('turn data', function(message) {
+		// alert("received something")
+		data = message 
+		cells = data.cells
+		choices = data.choices
+		drawField()
+	});
+
+   // event handler for new connections
+	socket.on('connect', function() {
+		socket.emit('new chess game', {data: 'Hi there!!'});
+	});
 
 
+});
 
