@@ -9,7 +9,7 @@ var selectedCell = -1
 var moveTo = -1
 
 // this is the json object that the client receives from the server
-var turnData
+var data
 
 // an array holding the possible choices for the selected piece
 var allPossibleChoices
@@ -18,6 +18,8 @@ var allPossibleChoices
 // each element represents the contents of a cell
 // entries are of the form: "free", "blackPawn", etc.
 var cells = []
+
+dataLoaded = false
 
 // calculate cell size
 cellSize = canvas.offsetWidth;
@@ -44,10 +46,11 @@ var getData = function(e) {
 			a: selectedCell,
 			b: moveTo
 		}, 
-		function(data) {
-			turnData = data
+		function(receivedData) {
+			data = receivedData
 			cells = data.cells
 			allPossibleChoices = data.choices
+			dataLoaded = true
 		}
 	);
 	return false;
@@ -163,17 +166,22 @@ function drawField(){
 canvas.addEventListener("click", mouseClicked, false)
 
 function mouseClicked(e) {
-	// getData()
-	alert("hi")
 	var x = e.pageX - $(canvas).offset().left
 	var y = e.pageY - $(canvas).offset().top
 
+	if (data == null){
+		alert("data is null")
+		getData()
+		alert("data fetched")
+		return
+	}
+
 	selection = cellFromCoordinates(x, y)
-	if(getPieceColor(cells[selection]) == turnData.playerTurn){
+	if(getPieceColor(cells[selection]) == data.playerTurn){
 		selectedCell = selection
 		// getChoices()
 	}
-	else if(getPieceColor(cells[selectedCell]) == turnData.playerTurn){
+	else if(getPieceColor(cells[selectedCell]) == data.playerTurn){
 		possibleChoices = allPossibleChoices[selectedCell]
 		for(var i in possibleChoices){
 			if(possibleChoices[i] == selection){
