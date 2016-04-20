@@ -52,7 +52,8 @@ def nextMove(message):
 	move = Move(selection, moveTo, chess)
 	chess.applyMove(move)
 	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
-	thread = Thread(target=calculateEnemyMove)
-	thread.daemon = True
-	thread.start()
+	# thread = Thread(target=calculateEnemyMove)
+	# thread.daemon = True
+	# thread.start()
+	calculateEnemyMove()
 
