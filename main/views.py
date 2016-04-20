@@ -56,7 +56,11 @@ def get_board():
 @app.route('/_get_choices')
 def get_choices(): 
 	selection = request.args.get('a', 0, type=int)
-	return jsonify(choices = chess.getPossibleChoices(selection))
+	choices = []
+	for i in range(0, 64):
+		choices.append(chess.getPossibleChoices(i))
+	# return jsonify(choices = chess.getPossibleChoices(selection))
+	return jsonify(choices=choices)
 	# return jsonify(choices=chess.coveredByWhite)
 
 

@@ -305,7 +305,10 @@ class Chess():
 		assert len(self.blackCells)+len(self.whiteCells)+len(self.freeCells) == 64
 
 	def toJson(self):
-		return jsonify(playerTurn=self.playerTurn, cells=self.cells)
+		choices = []
+		for i in range(0, 64):
+			choices.append(self.getPossibleChoices(i))
+		return jsonify(playerTurn=self.playerTurn, cells=self.cells, choices=choices)
 
 	def printASCII(self):
 		for i in range(0, 8):

@@ -12,7 +12,7 @@ var moveTo = -1
 var turnData
 
 // an array holding the possible choices for the selected piece
-var possibleChoices
+var allPossibleChoices
 
 // a client side representation of the field: array of 64 elements. 
 // each element represents the contents of a cell
@@ -47,6 +47,7 @@ var getData = function(e) {
 		function(data) {
 			turnData = data
 			cells = data.cells
+			allPossibleChoices = data.choices
 		}
 	);
 	return false;
@@ -58,18 +59,18 @@ $.ajaxSetup({
 });
 
 // request possible choices from the server
-var getChoices = function(e) {
-	$.getJSON(
-		$SCRIPT_ROOT + '/_get_choices', 
-		{
-			a: selectedCell
-		}, 
-		function(data) {
-			possibleChoices = data.choices
-		}
-	);
-	return false;
-};
+// var getChoices = function(e) {
+// 	$.getJSON(
+// 		$SCRIPT_ROOT + '/_get_choices', 
+// 		{
+// 			a: selectedCell
+// 		}, 
+// 		function(data) {
+// 			allPossibleChoices = data.choices
+// 		}
+// 	);
+// 	return false;
+// };
 
 function getImage(code){
 	switch(code){
@@ -141,6 +142,7 @@ function drawField(){
 		context.fillRect(x*cellSize, y*cellSize, cellSize, cellSize)
 		// highlight the possible choices 
 		context.fillStyle = "#FFAA44"
+		possibleChoices = allPossibleChoices[selectedCell]
 		for(var i in possibleChoices){
 			x = possibleChoices[i] % 8
 			y = Math.floor(possibleChoices[i] / 8)	
@@ -168,9 +170,10 @@ function mouseClicked(e) {
 	selection = cellFromCoordinates(x, y)
 	if(getPieceColor(cells[selection]) == turnData.playerTurn){
 		selectedCell = selection
-		getChoices()
+		// getChoices()
 	}
 	else if(getPieceColor(cells[selectedCell]) == turnData.playerTurn){
+		possibleChoices = allPossibleChoices[selectedCell]
 		for(var i in possibleChoices){
 			if(possibleChoices[i] == selection){
 				// alert("move!")
