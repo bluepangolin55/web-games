@@ -16,8 +16,6 @@ var data
 // entries are of the form: "free", "blackPawn", etc.
 var cells = []
 
-dataLoaded = false
-
 // calculate cell size
 cellSize = canvas.offsetWidth;
 if(canvas.offsetHeight < cellSize){
@@ -46,8 +44,7 @@ var getData = function(e) {
 		function(receivedData) {
 			data = receivedData
 			cells = data.cells
-			allPossibleChoices = data.choices
-			dataLoaded = true
+			alert(data)
 		}
 	);
 	return false;
