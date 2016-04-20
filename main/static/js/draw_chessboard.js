@@ -163,7 +163,8 @@ function drawField(){
 canvas.addEventListener("click", mouseClicked, false)
 
 function mouseClicked(e) {
-	getData()
+	// getData()
+	alert("hi")
 	var x = e.pageX - $(canvas).offset().left
 	var y = e.pageY - $(canvas).offset().top
 
