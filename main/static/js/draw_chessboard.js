@@ -25,7 +25,6 @@ cellSize = cellSize / 8
 
 
 function getCursorPosition(canvas, event) {
-	alert("hi")
 	var rect = canvas.getBoundingClientRect();
 	var x = event.clientX - rect.left;
 	var y = event.clientY - rect.top;
@@ -44,7 +43,6 @@ var getData = function(e) {
 		function(receivedData) {
 			data = receivedData
 			cells = data.cells
-			alert(data)
 		}
 	);
 	return false;
@@ -54,20 +52,6 @@ var getData = function(e) {
 $.ajaxSetup({
     async: false
 });
-
-// request possible choices from the server
-// var getChoices = function(e) {
-// 	$.getJSON(
-// 		$SCRIPT_ROOT + '/_get_choices', 
-// 		{
-// 			a: selectedCell
-// 		}, 
-// 		function(data) {
-// 			allPossibleChoices = data.choices
-// 		}
-// 	);
-// 	return false;
-// };
 
 function getImage(code){
 	switch(code){
@@ -164,9 +148,7 @@ function mouseClicked(e) {
 	var y = e.pageY - $(canvas).offset().top
 
 	if (data == null){
-		alert("data is null")
 		getData()
-		alert("data fetched")
 		return
 	}
 
@@ -179,7 +161,6 @@ function mouseClicked(e) {
 		possibleChoices = data.choices[selectedCell]
 		for(var i in possibleChoices){
 			if(possibleChoices[i] == selection){
-				// alert("move!")
 				moveTo = selection
 				getData()
 				moveTo = -1
