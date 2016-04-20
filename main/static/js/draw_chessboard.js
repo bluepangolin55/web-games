@@ -11,9 +11,6 @@ var moveTo = -1
 // this is the json object that the client receives from the server
 var data
 
-// an array holding the possible choices for the selected piece
-var allPossibleChoices
-
 // a client side representation of the field: array of 64 elements. 
 // each element represents the contents of a cell
 // entries are of the form: "free", "blackPawn", etc.
@@ -145,7 +142,7 @@ function drawField(){
 		context.fillRect(x*cellSize, y*cellSize, cellSize, cellSize)
 		// highlight the possible choices 
 		context.fillStyle = "#FFAA44"
-		possibleChoices = allPossibleChoices[selectedCell]
+		possibleChoices = data.choices[selectedCell]
 		for(var i in possibleChoices){
 			x = possibleChoices[i] % 8
 			y = Math.floor(possibleChoices[i] / 8)	
@@ -182,7 +179,7 @@ function mouseClicked(e) {
 		// getChoices()
 	}
 	else if(getPieceColor(cells[selectedCell]) == data.playerTurn){
-		possibleChoices = allPossibleChoices[selectedCell]
+		possibleChoices = data.choices[selectedCell]
 		for(var i in possibleChoices){
 			if(possibleChoices[i] == selection){
 				// alert("move!")
