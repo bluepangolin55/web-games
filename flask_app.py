@@ -1,3 +1,3 @@
 from flask import Flask
 
-from main import app
+from main import app, socketio
