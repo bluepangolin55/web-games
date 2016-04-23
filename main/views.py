@@ -36,6 +36,7 @@ def about():
 @socketio.on('new chess game', namespace='/test')
 def newGame(message):
 	global chess
+	chess = Chess()
 	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
 
 @socketio.on('request data', namespace='/test')
