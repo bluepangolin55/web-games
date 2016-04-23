@@ -38,22 +38,24 @@ def newGame(message):
 	global chess
 	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
 
-@socketio.on('request turn data', namespace='/test')
+@socketio.on('request data', namespace='/test')
 def newGame(message):
 	global chess
+	print("requesting turn data")
 	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
 
 @socketio.on('submit move', namespace='/test')
 def nextMove(message):
 	global chess
+	print("move submitted")
 	selection = message['from']
 	moveTo = message['to']
 
 	move = Move(selection, moveTo, chess)
 	chess.applyMove(move)
 	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
-	# thread = Thread(target=calculateEnemyMove)
-	# thread.daemon = True
-	# thread.start()
-	calculateEnemyMove()
+	thread = Thread(target=calculateEnemyMove)
+	thread.daemon = True
+	thread.start()
+	socketio.emit('turn data', chess.toDict(), json=True, namespace='/test')
 

@@ -126,17 +126,14 @@ function drawField(){
 		}
 	}
 }
-
 canvas.addEventListener("click", mouseClicked, false)
 
 function mouseClicked(e) {
 	var x = e.pageX - $(canvas).offset().left
 	var y = e.pageY - $(canvas).offset().top
 
-
-
 	if (data == null){
-		socket.emit('request turn data', {data: 'Hi there!!'});
+		socket.emit('request data', {data: 'Hi there!!'});
 		return
 	}
 
@@ -165,6 +162,7 @@ function cellFromCoordinates(x, y){
 
 document.addEventListener("DOMContentLoaded", theDomHasLoaded, false);
 window.addEventListener("load", pageFullyLoaded, false);
+window.addEventListener("refresh", pageFullyLoaded, false);
  
 function theDomHasLoaded(e) {
 }
@@ -179,8 +177,6 @@ $(document).ready(function(){
 	// this is specially important when using the global namespace
 	socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
 
-	socket.emit('new chess game', {data: 'Hi there!!'});
-
 	socket.on('turn data', function(message) {
 		// alert("received something")
 		data = message 
@@ -193,7 +189,6 @@ $(document).ready(function(){
 	socket.on('connect', function() {
 		socket.emit('new chess game', {data: 'Hi there!!'});
 	});
-
 
 });
 
