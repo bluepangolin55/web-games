@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+{% block title %}
+<title>Chess</title>
+{% endblock %}
+
+{% block head %}
+<head>
+	<title> Chess </title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel='stylesheet' type='text/css'
+		href='{{ url_for('static', filename='css/stylesheet.css') }}'/>
+	<!-- <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script> -->
+	<!-- <script type="text/javascript" src="js/socket.io.min.js"></script> -->
+	<script type="text/javascript" src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+
+
+	<!-- load MUI -->
+	<!-- <link href="//cdn.muicss.com/mui-0.9.16/css/mui.min.css" rel="stylesheet" type="text/css" /> -->
+	<link rel='stylesheet' type='text/css' href='{{ url_for('static', filename='css/mui.min.css') }}'/>
+	<!-- <script src="//cdn.muicss.com/mui-0.9.16/js/mui.min.js"></script> -->
+	<script type="text/javascript" src="{{ url_for('static', filename='js/mui.min.js') }}"></script>
+
+	<!-- images for the pieces -->
+	<img hidden="true" id="blackPawn" src="{{ url_for('static', filename='images/Chess_pdt45.svg') }}"/>
+	<img hidden="true" id="blackKnight" src="{{ url_for('static', filename='images/Chess_ndt45.svg') }}/">
+	<img hidden="true" id="blackBishop" src="{{ url_for('static', filename='images/Chess_bdt45.svg') }}"/>
+	<img hidden="true" id="blackRook" src="{{ url_for('static', filename='images/Chess_rdt45.svg') }}"/>
+	<img hidden="true" id="blackQueen" src="{{ url_for('static', filename='images/Chess_qdt45.svg') }}"/>
+	<img hidden="true" id="blackKing" src="{{ url_for('static', filename='images/Chess_kdt45.svg') }}"/>
+
+	<img hidden="true" id="whitePawn" src="{{ url_for('static', filename='images/Chess_plt45.svg') }}"/>
+	<img hidden="true" id="whiteKnight" src="{{ url_for('static', filename='images/Chess_nlt45.svg') }}"/>
+	<img hidden="true" id="whiteBishop" src="{{ url_for('static', filename='images/Chess_blt45.svg') }}"/>
+	<img hidden="true" id="whiteRook" src="{{ url_for('static', filename='images/Chess_rlt45.svg') }}"/>
+	<img hidden="true" id="whiteQueen" src="{{ url_for('static', filename='images/Chess_qlt45.svg') }}"/>
+	<img hidden="true" id="whiteKing" src="{{ url_for('static', filename='images/Chess_klt45.svg') }}"/>
+</head>
+{% endblock %}
+
+{% block body %}
+<body>
+	<div id="sidedrawer" class="mui--no-user-select">
+	  <!-- Side drawer content goes here -->
+	  <div id="sidedrawer-brand" class="mui--appbar-line-height">
+		  <span class="mui--text-title">Menu</span>
+	  </div>
+	  <div class="mui-divider"></div>
+	  <ul>
+		  <li>
+			  <strong><a href="index#"> Start </a></strong>
+		  </li>
+		  <li>
+		    <strong>Category 1</strong>
+		    <ul>
+		      <li><a href="#">Item 1</a></li>
+		      <li><a href="#">Item 2</a></li>
+		      <li><a href="#">Item 3</a></li>
+		    </ul>
+		  </li>
+		</ul>
+	</div>
+
+	<header id="header">
+	<div class="mui-appbar mui--appbar-line-height">
+		<div class="mui-container-fluid">
+			<a class="sidedrawer-toggle mui--visible-xs-inline-block mui--visible-sm-inline-block js-show-sidedrawer">☰</a>
+			<a class="sidedrawer-toggle mui--hidden-xs mui--hidden-sm js-hide-sidedrawer">☰</a>
+			<span class="mui--text-title mui--visible-xs-inline-block">Brand.io</span>
+		</div>
+	</div>
+	</header>
+
+	<div class="mui--appbar-height"></div>
+
+	<div id="content-wrapper">
+		<canvas id="chessfield" width="600" height="600">
+			This text is displayed if your browser does not support HTML5 Canvas.
+		</canvas>
+
+		<footer id="footer">
+		  <div class="mui-container-fluid">
+		    <br>
+		    Made with ♥ by <a href="https://www.muicss.com">MUI</a>
+		  </div>
+		</footer>
+	</div>
+
+
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> -->
+	 <script>if (!window.jQuery) { document.write('<script src="{{ url_for('static', filename='js/jquery.js') }}"><\/script>'); } </script>
+	<script type="text/javascript">
+	  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		</script>
+
+
+
+	<script type="text/javascript" src="{{ url_for('static', filename='js/chess.js') }}"></script>
+
+</body>
+{% endblock %}
