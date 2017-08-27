@@ -1,2 +1,5 @@
 /tmp
 /app/__pycache__
+/main/__pycache__
+/node_modules
+*.pyc
